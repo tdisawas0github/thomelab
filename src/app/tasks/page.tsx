@@ -21,6 +21,10 @@ export default function TasksPage() {
   const [priority, setPriority] = useState("medium");
   const [dueDate, setDueDate] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<"all" | TaskDoc["status"]>("all");
+  const [filterPriority, setFilterPriority] = useState<"all" | TaskDoc["priority"]>("all");
+  const [query, setQuery] = useState("");
 
   const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
   const collectionId = process.env.NEXT_PUBLIC_APPWRITE_TASKS_COLLECTION_ID;
@@ -89,6 +93,7 @@ export default function TasksPage() {
       setPriority("medium");
       setDueDate("");
       await loadTasks();
+      setSuccess("Task added");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to add task";
       setError(message);
@@ -120,6 +125,7 @@ export default function TasksPage() {
 
   async function deleteTask(doc: TaskDoc) {
     if (!ready) return;
+    if (typeof window !== "undefined" && !window.confirm("Delete this task?")) return;
     setLoading(true);
     setError(null);
     try {
@@ -138,15 +144,49 @@ export default function TasksPage() {
     }
   }
 
-  const sortedTasks = useMemo(() => {
-    const arr = [...tasks];
+  const filtered = useMemo(() => {
+    let arr = [...tasks];
+    if (filterStatus !== "all") arr = arr.filter((t) => t.status === filterStatus);
+    if (filterPriority !== "all") arr = arr.filter((t) => t.priority === filterPriority);
+    if (query.trim()) arr = arr.filter((t) => t.title.toLowerCase().includes(query.toLowerCase()));
+    return arr;
+  }, [tasks, filterStatus, filterPriority, query]);
+
+  
+
+  const sortedFiltered = useMemo(() => {
+    const arr = [...filtered];
     arr.sort((a, b) => {
       const ad = a.dueDate ? new Date(a.dueDate).getTime() : 0;
       const bd = b.dueDate ? new Date(b.dueDate).getTime() : 0;
       return ad - bd;
     });
     return arr;
-  }, [tasks]);
+  }, [filtered]);
+
+  function priorityClass(p: TaskDoc["priority"]) {
+    if (p === "high") return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300";
+    if (p === "medium") return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300";
+    return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300";
+  }
+
+  function statusClass(s: TaskDoc["status"]) {
+    if (s === "done") return "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+    if (s === "in_progress") return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
+    return "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+  }
+
+  function dueLabel(d?: string | null) {
+    if (!d) return "No due";
+    const date = new Date(d);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diff = Math.floor((date.getTime() - today.getTime()) / 86400000);
+    if (diff === 0) return "Due today";
+    if (diff === 1) return "Due tomorrow";
+    if (diff < 0) return `Overdue ${Math.abs(diff)}d`;
+    return `Due in ${diff}d`;
+  }
 
   if (loadingUser) {
     return (
@@ -169,11 +209,15 @@ export default function TasksPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">Tasks</h1>
+      <div className="flex items-end justify-between">
+        <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">Tasks</h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{tasks.length} total</p>
+      </div>
       {!ready && (
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">Configure Appwrite envs</p>
       )}
       {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {success && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">{success}</p>}
       <form onSubmit={addTask} className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <input
           type="text"
@@ -206,34 +250,70 @@ export default function TasksPage() {
           {loading ? "Saving..." : "Add Task"}
         </button>
       </form>
-      <div className="mt-8 space-y-2">
-        {sortedTasks.length === 0 && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">No tasks yet</p>
-        )}
-        {sortedTasks.map((t) => (
-          <div key={t.$id} className="flex items-center justify-between rounded-md border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
-            <div>
-              <p className="font-medium text-black dark:text-zinc-50">{t.title}</p>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">{t.priority} · {t.status} {t.dueDate ? `· due ${new Date(t.dueDate).toLocaleDateString()}` : ""}</p>
-            </div>
-            <div className="flex gap-2">
-              {t.status !== "done" && (
-                <button
-                  onClick={() => completeTask(t)}
-                  className="rounded-md bg-black px-3 py-1 text-sm text-white dark:bg-zinc-50 dark:text-black"
-                >
-                  Complete
-                </button>
-              )}
-              <button
-                onClick={() => deleteTask(t)}
-                className="rounded-md border border-zinc-300 px-3 py-1 text-sm text-black dark:border-zinc-700 dark:text-zinc-50"
-              >
-                Delete
-              </button>
-            </div>
+      <div className="mt-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-2">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as "all" | TaskDoc["status"])}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            >
+              <option value="all">All statuses</option>
+              <option value="todo">Todo</option>
+              <option value="in_progress">In progress</option>
+              <option value="done">Done</option>
+            </select>
+            <select
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value as "all" | TaskDoc["priority"])}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            >
+              <option value="all">All priorities</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
           </div>
-        ))}
+          <input
+            type="text"
+            placeholder="Search tasks"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+        </div>
+
+        <div className="mt-4 space-y-2">
+          {sortedFiltered.length === 0 && (
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">No tasks match your filters</p>
+          )}
+          {sortedFiltered.map((t) => (
+            <div key={t.$id} className="flex items-center justify-between rounded-md border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="flex items-center gap-3">
+                <span className={`rounded-full px-2 py-0.5 text-xs ${priorityClass(t.priority)}`}>{t.priority}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs ${statusClass(t.status)}`}>{t.status.replace("_", " ")}</span>
+                <p className="font-medium text-black dark:text-zinc-50">{t.title}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs ${t.dueDate && new Date(t.dueDate) < new Date() ? "text-red-600 dark:text-red-400" : "text-zinc-600 dark:text-zinc-400"}`}>{dueLabel(t.dueDate ?? undefined)}</span>
+                {t.status !== "done" && (
+                  <button
+                    onClick={() => completeTask(t)}
+                    className="rounded-md bg-black px-3 py-1 text-sm text-white dark:bg-zinc-50 dark:text-black"
+                  >
+                    Complete
+                  </button>
+                )}
+                <button
+                  onClick={() => deleteTask(t)}
+                  className="rounded-md border border-zinc-300 px-3 py-1 text-sm text-black dark:border-zinc-700 dark:text-zinc-50"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ export default function Home() {
   const [priority, setPriority] = useState("medium");
   const [dueDate, setDueDate] = useState("");
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [statusType, setStatusType] = useState<"info" | "error" | "success">("info");
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
 
@@ -48,10 +49,12 @@ export default function Home() {
       setTitle("");
       setPriority("medium");
       setDueDate("");
-      setStatusMsg("Task created");
+      setStatusMsg("Task added");
+      setStatusType("success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create task";
       setStatusMsg(message);
+      setStatusType("error");
     } finally {
       setLoading(false);
     }
@@ -95,7 +98,7 @@ export default function Home() {
           </button>
         </form>
         {statusMsg && (
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">{statusMsg}</p>
+          <p className={`mt-3 text-sm ${statusType === "success" ? "text-emerald-600 dark:text-emerald-400" : statusType === "error" ? "text-red-600 dark:text-red-400" : "text-zinc-600 dark:text-zinc-400"}`}>{statusMsg}</p>
         )}
       </main>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { getAccount } from "@/lib/appwrite";
 import type { Models } from "appwrite";
 import AuthForm from "./AuthForm";
@@ -8,6 +9,7 @@ import AuthForm from "./AuthForm";
 export default function Header() {
   const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const account = getAccount();
@@ -27,9 +29,9 @@ export default function Header() {
           THOMELAB
         </Link>
         <div className="flex items-center gap-4">
-          <Link href="/tasks" className="text-sm text-zinc-700 dark:text-zinc-300">
-            Tasks
-          </Link>
+        <Link href="/tasks" className={`text-sm ${pathname === "/tasks" ? "text-black dark:text-zinc-50 font-medium" : "text-zinc-700 dark:text-zinc-300"}`}>
+          Tasks
+        </Link>
           {user ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-zinc-700 dark:text-zinc-300">{user.email}</span>
