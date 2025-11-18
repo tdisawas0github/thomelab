@@ -40,6 +40,7 @@ NEXT_PUBLIC_APPWRITE_DATABASE_ID=your_database_id
 NEXT_PUBLIC_APPWRITE_TASKS_COLLECTION_ID=your_tasks_collection_id
 NEXT_PUBLIC_APPWRITE_ACTIVITIES_COLLECTION_ID=your_activities_collection_id
 NEXT_PUBLIC_APPWRITE_TIMELOGS_COLLECTION_ID=your_timelogs_collection_id
+NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID=your_notes_collection_id
 ```
 
 Restart after changes:
@@ -73,11 +74,11 @@ Collection permissions (recommended):
 - Create/Read/Update/Delete: `users`
   - The app will still set per-document permissions to the signed-in user using `Role.user(<userId>)` so only you can access your rows.
 
-## 5) Try It
+## 7) Try It
 1. Open `http://localhost:3000/` → click "Sign In" → sign up/sign in.
 2. Visit `http://localhost:3000/tasks` → add, complete, delete tasks.
 
-## 6) How This App Integrates Appwrite
+## 8) How This App Integrates Appwrite
 - Client init: `src/lib/appwrite.ts:10-16` creates the Appwrite client with endpoint + project.
 - Auth:
   - Sign in/up form: `src/components/AuthForm.tsx:26-43` creates sessions via Email/Password.
@@ -166,3 +167,19 @@ Notes on terminology:
 - Consider TablesDB with generics for type-safe rows if you prefer the new terminology.
 
 You’re set. With envs and permissions configured, THOMELAB handles auth and task management securely via Appwrite.
+## 6) Notes Collection (IDs and Schema)
+- Create a `notes` collection for your note-taking page.
+- After creating, copy the collection `ID` and paste into `NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID` in `.env.local`.
+- Suggested attributes:
+  - `title`: `string`, required
+  - `content`: `string`, required
+  - `category`: `string`, optional
+- Permissions: Create/Read/Update/Delete → `users` (the app also sets per-document permissions to the current user).
+
+Notes page route: `/notes`. Code uses named-parameter Web SDK calls to list, create, edit, and delete notes.
+
+Notes operations:
+- List notes: `src/app/notes/page.tsx:22-35`, `src/app/notes/page.tsx:40-52`
+- Create note: `src/app/notes/page.tsx:55-76`
+- Update note: `src/app/notes/page.tsx:100-116`
+- Delete note: `src/app/notes/page.tsx:123-134`

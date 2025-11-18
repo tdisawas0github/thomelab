@@ -92,7 +92,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={!canCreate || loading}
-            className="col-span-2 rounded-md bg-black px-4 py-2 text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-black"
+            className="col-span-2 rounded-md bg-black px-4 py-2 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed dark:bg-zinc-50 dark:text-black"
           >
             {loading ? "Saving..." : canCreate ? "Add Task" : user ? "Configure Appwrite envs" : "Sign in to add"}
           </button>

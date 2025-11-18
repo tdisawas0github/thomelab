@@ -29,15 +29,18 @@ export default function Header() {
           THOMELAB
         </Link>
         <div className="flex items-center gap-4">
-        <Link href="/tasks" className={`text-sm ${pathname === "/tasks" ? "text-black dark:text-zinc-50 font-medium" : "text-zinc-700 dark:text-zinc-300"}`}>
-          Tasks
-        </Link>
+          <Link href="/tasks" className={`text-sm ${pathname === "/tasks" ? "text-black dark:text-zinc-50 font-medium" : "text-zinc-700 dark:text-zinc-300"}`}>
+            Tasks
+          </Link>
+          <Link href="/notes" className={`text-sm ${pathname === "/notes" ? "text-black dark:text-zinc-50 font-medium" : "text-zinc-700 dark:text-zinc-300"}`}>
+            Notes
+          </Link>
           {user ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-zinc-700 dark:text-zinc-300">{user.email}</span>
               <button
                 onClick={logout}
-                className="rounded-md bg-black px-3 py-1 text-sm text-white dark:bg-zinc-50 dark:text-black"
+                className="rounded-md bg-black px-3 py-1 text-sm text-white cursor-pointer dark:bg-zinc-50 dark:text-black"
               >
                 Logout
               </button>
@@ -45,7 +48,7 @@ export default function Header() {
           ) : (
             <button
               onClick={() => setOpen((v) => !v)}
-              className="rounded-md bg-black px-3 py-1 text-sm text-white dark:bg-zinc-50 dark:text-black"
+              className="rounded-md bg-black px-3 py-1 text-sm text-white cursor-pointer dark:bg-zinc-50 dark:text-black"
             >
               Sign In
             </button>

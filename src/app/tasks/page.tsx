@@ -245,7 +245,7 @@ export default function TasksPage() {
         <button
           type="submit"
           disabled={!ready || loading}
-          className="col-span-2 rounded-md bg-black px-4 py-2 text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-black"
+          className="col-span-2 rounded-md bg-black px-4 py-2 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed dark:bg-zinc-50 dark:text-black"
         >
           {loading ? "Saving..." : "Add Task"}
         </button>
@@ -297,19 +297,19 @@ export default function TasksPage() {
               <div className="flex items-center gap-3">
                 <span className={`text-xs ${t.dueDate && new Date(t.dueDate) < new Date() ? "text-red-600 dark:text-red-400" : "text-zinc-600 dark:text-zinc-400"}`}>{dueLabel(t.dueDate ?? undefined)}</span>
                 {t.status !== "done" && (
-                  <button
-                    onClick={() => completeTask(t)}
-                    className="rounded-md bg-black px-3 py-1 text-sm text-white dark:bg-zinc-50 dark:text-black"
-                  >
-                    Complete
-                  </button>
-                )}
                 <button
-                  onClick={() => deleteTask(t)}
-                  className="rounded-md border border-zinc-300 px-3 py-1 text-sm text-black dark:border-zinc-700 dark:text-zinc-50"
+                  onClick={() => completeTask(t)}
+                  className="rounded-md bg-black px-3 py-1 text-sm text-white cursor-pointer dark:bg-zinc-50 dark:text-black"
                 >
-                  Delete
+                  Complete
                 </button>
+              )}
+              <button
+                onClick={() => deleteTask(t)}
+                className="rounded-md border border-zinc-300 px-3 py-1 text-sm text-black cursor-pointer dark:border-zinc-700 dark:text-zinc-50"
+              >
+                Delete
+              </button>
               </div>
             </div>
           ))}

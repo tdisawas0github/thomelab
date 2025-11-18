@@ -46,14 +46,14 @@ export default function AuthForm({ onAuth }: Props) {
     <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-4 flex gap-2">
         <button
-          className={`rounded-md px-3 py-1 text-sm ${mode === "signin" ? "bg-black text-white dark:bg-zinc-50 dark:text-black" : "bg-zinc-100 text-black dark:bg-zinc-800 dark:text-zinc-50"}`}
+          className={`rounded-md px-3 py-1 text-sm cursor-pointer ${mode === "signin" ? "bg-black text-white dark:bg-zinc-50 dark:text-black" : "bg-zinc-100 text-black dark:bg-zinc-800 dark:text-zinc-50"}`}
           onClick={() => setMode("signin")}
           type="button"
         >
           Sign In
         </button>
         <button
-          className={`rounded-md px-3 py-1 text-sm ${mode === "signup" ? "bg-black text-white dark:bg-zinc-50 dark:text-black" : "bg-zinc-100 text-black dark:bg-zinc-800 dark:text-zinc-50"}`}
+          className={`rounded-md px-3 py-1 text-sm cursor-pointer ${mode === "signup" ? "bg-black text-white dark:bg-zinc-50 dark:text-black" : "bg-zinc-100 text-black dark:bg-zinc-800 dark:text-zinc-50"}`}
           onClick={() => setMode("signup")}
           type="button"
         >
@@ -89,7 +89,7 @@ export default function AuthForm({ onAuth }: Props) {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-black"
+          className="rounded-md bg-black px-4 py-2 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed dark:bg-zinc-50 dark:text-black"
         >
           {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Sign Up"}
         </button>
